@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inventoryservice", "Inventoryservice\Inventoryservice.csproj", "{F8D999DF-1370-4B69-AC6B-34F6BD90406D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checkoutservice", "Checkoutservice\Checkoutservice.csproj", "{96B5A455-7D98-4D08-BFE3-EE3640592992}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{C3022DA4-72D8-408D-BB52-0DB59B6F6262}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService", "AuthService\AuthService.csproj", "{C6CABA83-36FC-4B17-B6D4-73FD1EA09D68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryService", "InventoryService\InventoryService.csproj", "{4678592B-61DB-42DE-B0A4-FEA6198C723A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,10 +14,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F8D999DF-1370-4B69-AC6B-34F6BD90406D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8D999DF-1370-4B69-AC6B-34F6BD90406D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8D999DF-1370-4B69-AC6B-34F6BD90406D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8D999DF-1370-4B69-AC6B-34F6BD90406D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{96B5A455-7D98-4D08-BFE3-EE3640592992}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{96B5A455-7D98-4D08-BFE3-EE3640592992}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96B5A455-7D98-4D08-BFE3-EE3640592992}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -30,5 +26,9 @@ Global
 		{C6CABA83-36FC-4B17-B6D4-73FD1EA09D68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6CABA83-36FC-4B17-B6D4-73FD1EA09D68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6CABA83-36FC-4B17-B6D4-73FD1EA09D68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4678592B-61DB-42DE-B0A4-FEA6198C723A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4678592B-61DB-42DE-B0A4-FEA6198C723A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4678592B-61DB-42DE-B0A4-FEA6198C723A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4678592B-61DB-42DE-B0A4-FEA6198C723A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
