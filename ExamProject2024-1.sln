@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checkoutservice", "Checkout
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{C3022DA4-72D8-408D-BB52-0DB59B6F6262}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService", "AuthService\AuthService.csproj", "{C6CABA83-36FC-4B17-B6D4-73FD1EA09D68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{C3022DA4-72D8-408D-BB52-0DB59B6F6262}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3022DA4-72D8-408D-BB52-0DB59B6F6262}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3022DA4-72D8-408D-BB52-0DB59B6F6262}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6CABA83-36FC-4B17-B6D4-73FD1EA09D68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6CABA83-36FC-4B17-B6D4-73FD1EA09D68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6CABA83-36FC-4B17-B6D4-73FD1EA09D68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6CABA83-36FC-4B17-B6D4-73FD1EA09D68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
