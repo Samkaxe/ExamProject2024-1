@@ -1,0 +1,27 @@
+﻿# .NET Core
+project.lock.json
+.project.json.user
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+bin/
+obj/
+nupkg/
+
+# Visual Studio Code
+.vscode/
+*.swp
+*.bak
+*.aps
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.vs/
+
+# Rider
+.idea/
+*.sln.iml
