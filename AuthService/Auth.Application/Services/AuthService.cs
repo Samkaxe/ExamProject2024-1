@@ -19,15 +19,7 @@ public class AuthService: IAuthService
 
     public async Task<OperationResult<BearerToken>> Register(RegisterModel registerModel)
     {
-        Credentials credentials = new Credentials()
-        {
-            UserId = Guid.NewGuid(),
-            Email = registerModel.Email,
-            PasswordHash = "'CACA'",
-            Salt = "salt"
-        };
-        Credentials created = await _credentialRepository.RegisterCredentials(credentials);
-        return OperationResult<BearerToken>.CreateSuccessResult(new BearerToken() { Email = created.Email });
+        
     }
 
     public Task<OperationResult<BearerToken>> Login(LoginModel loginModel)
