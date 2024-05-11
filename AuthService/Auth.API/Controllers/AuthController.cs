@@ -11,6 +11,7 @@ public class AuthController: ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
+        
     }
 
     // POST api/auth/login
