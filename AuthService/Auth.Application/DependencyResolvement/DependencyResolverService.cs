@@ -9,6 +9,7 @@ public static class DependencyResolverService
     public static void RegisterApplicationLayer(IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
-        
+        services.AddScoped<IEncryptionService, EncryptionService>();
+
     }
 }

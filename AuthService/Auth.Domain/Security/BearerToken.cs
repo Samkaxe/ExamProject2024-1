@@ -2,5 +2,5 @@
 
 public class BearerToken
 {
-    public string Email { get; set; }
+    public byte[] Email { get; set; }
 }
