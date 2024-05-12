@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 using Auth.Application.Interfaces;
 using BCrypt.Net;
 using Microsoft.Extensions.Configuration;
@@ -17,25 +18,45 @@ public class EncryptionService : IEncryptionService
 
     public void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
     {
-        // Generate a salt and hash the password with the secret appended if needed
+        // Generate a random salt
         string salt = BCrypt.Net.BCrypt.GenerateSalt();
-        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(_jwtSecret + password, salt);
+        passwordSalt = Encoding.UTF8.GetBytes(salt);
 
-        // Convert the hashed password to a byte array
-        passwordHash = System.Text.Encoding.UTF8.GetBytes(hashedPassword);
+        // Using HMAC to hash the password first
+        using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_jwtSecret)))
+        {
+            var passwordBytes = Encoding.UTF8.GetBytes(password);
+            var hmacBytes = hmac.ComputeHash(passwordBytes);
 
-        // Extract just the salt part of the hash to show how it can be done, though it's not necessary
-        string extractedSalt = salt; // BCrypt salt can be extracted from hashedPassword if needed
-        passwordSalt = System.Text.Encoding.UTF8.GetBytes(extractedSalt);
+            // Now hash the HMAC output with BCrypt along with the salt
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(Convert.ToBase64String(hmacBytes), salt);
+            passwordHash = Encoding.UTF8.GetBytes(hashedPassword);
+        }
     }
 
     public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
-        // Convert the stored hash from bytes back to string
-        string hashString = System.Text.Encoding.UTF8.GetString(storedHash);
+        // Decode the stored salt from byte array to string
+        string saltString = Encoding.UTF8.GetString(storedSalt);
 
-        // Verify the password (with secret appended) against the stored hash
-        return BCrypt.Net.BCrypt.Verify(_jwtSecret + password, hashString);
+        // Using HMAC to hash the input password first
+        using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_jwtSecret)))
+        {
+            var passwordBytes = Encoding.UTF8.GetBytes(password);
+            var hmacBytes = hmac.ComputeHash(passwordBytes);
+
+            // Convert the HMAC output to a base64 string to hash with BCrypt using the stored salt
+            string hmacOutput = Convert.ToBase64String(hmacBytes);
+
+            // Rehash the HMAC output with the original salt used during hashing
+            string rehashedPassword = BCrypt.Net.BCrypt.HashPassword(hmacOutput, saltString);
+
+            // Convert stored hash from byte array to string for comparison
+            string storedHashString = Encoding.UTF8.GetString(storedHash);
+
+            // Verify if the rehashed password with the salt matches the stored hash
+            return rehashedPassword == storedHashString;
+        }
     }
 
 }
