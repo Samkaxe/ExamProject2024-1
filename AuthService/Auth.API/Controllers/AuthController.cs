@@ -1,8 +1,6 @@
 ﻿using Auth.API.DTOs;
 using Auth.Application.Interfaces;
 using Auth.Domain.OperationResults;
-using Auth.Domain.Security;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.API.Controllers;
@@ -21,7 +19,7 @@ public class AuthController: ControllerBase
 
     // POST api/auth/register
     [HttpPost("register")]
-    public async Task<ActionResult<OperationResult<BearerToken>>> Register([FromBody] RegisterModel model)
+    public async Task<ActionResult<OperationResult<string>>> Register([FromBody] RegisterModel model)
     {
         var result = await _authService.Register(model);
         return Ok(result);
@@ -29,7 +27,7 @@ public class AuthController: ControllerBase
 
     // POST api/auth/login
     [HttpPost("login")]
-    public async Task<ActionResult<OperationResult<BearerToken>>> Login([FromBody] LoginModel model)
+    public async Task<ActionResult<OperationResult<string>>> Login([FromBody] LoginModel model)
     {
         return await _authService.Login(model);
     }

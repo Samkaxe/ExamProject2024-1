@@ -1,25 +1,27 @@
 ﻿using Auth.API.DTOs;
 using Auth.Application.Interfaces;
-using Auth.Domain.Entities;
+using Auth.Domain.BusinessEntities;
 using Auth.Domain.OperationResults;
-using Auth.Domain.Security;
 using Auth.Infrastructure.Interfaces;
 
 namespace Auth.Application.Services;
 
 public class AuthService: IAuthService
 {
-
     private readonly ICredentialRepository _credentialRepository;
     private readonly IEncryptionService _encryptionService;
+    private readonly ITokenService _tokenService;
 
-    public AuthService(ICredentialRepository credentialRepository, IEncryptionService encryptionService)
+    public AuthService(ICredentialRepository credentialRepository,
+        IEncryptionService encryptionService,
+        ITokenService tokenService)
     {
         _credentialRepository = credentialRepository;
         _encryptionService = encryptionService;
+        _tokenService = tokenService;
     }
 
-    public async Task<OperationResult<BearerToken>> Register(RegisterModel registerModel)
+    public async Task<OperationResult<string>> Register(RegisterModel registerModel)
     {
         _encryptionService.CreatePasswordHash(registerModel.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -30,13 +32,21 @@ public class AuthService: IAuthService
             Salt = passwordSalt
         };
 
-        var createdCredentials = _credentialRepository.RegisterCredentials(credentials);
+        var createdCredentials = await _credentialRepository.RegisterCredentials(credentials);
+        string bearerToken = _tokenService.GenerateToken(createdCredentials);
 
-        return OperationResult<BearerToken>.CreateSuccessResult(new BearerToken() { Email = passwordHash });
+        return OperationResult<string>.CreateSuccessResult(bearerToken);
     }
 
-    public Task<OperationResult<BearerToken>> Login(LoginModel loginModel)
+    public async Task<OperationResult<string>> Login(LoginModel loginModel)
     {
-        throw new NotImplementedException();
+        Credentials existingCredentials = await _credentialRepository.GetCredentialsByEmailAsync(loginModel.Email);
+        if (_encryptionService.VerifyPasswordHash(loginModel.Password,existingCredentials.PasswordHash,existingCredentials.Salt))
+        {
+            string token = _tokenService.GenerateToken(existingCredentials);
+            return OperationResult<string>.CreateSuccessResult(token);
+        }
+
+        return OperationResult<string>.CreateSuccessResult("not done");
     }
 }

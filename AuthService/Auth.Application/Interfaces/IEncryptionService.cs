@@ -4,6 +4,6 @@ public interface IEncryptionService
 {
     public void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt);
 
-    public bool VerifyPasswordHash(string password, string storedHash, string storedSalt);
+    public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt);
 
 }

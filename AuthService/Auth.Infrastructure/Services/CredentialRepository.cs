@@ -1,4 +1,4 @@
-﻿using Auth.Domain.Entities;
+﻿using Auth.Domain.BusinessEntities;
 using Auth.Infrastructure.Interfaces;
 
 namespace Auth.Infrastructure.Services;
@@ -16,6 +16,7 @@ public class CredentialRepository: ICredentialRepository
         }
 
         _credentialsStore.Add(credentials.Email, credentials);
+        credentials.UserId = Guid.NewGuid();
         return Task.FromResult(credentials);
     }
 

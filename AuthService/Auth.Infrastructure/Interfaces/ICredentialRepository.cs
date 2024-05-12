@@ -1,4 +1,4 @@
-﻿using Auth.Domain.Entities;
+﻿using Auth.Domain.BusinessEntities;
 
 namespace Auth.Infrastructure.Interfaces;
 

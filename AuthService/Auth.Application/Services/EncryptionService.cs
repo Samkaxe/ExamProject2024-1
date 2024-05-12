@@ -23,8 +23,8 @@ public class EncryptionService : IEncryptionService
         passwordSalt = System.Text.Encoding.UTF8.GetBytes(salt);
     }
 
-    public bool VerifyPasswordHash(string password, string storedHash, string storedSalt)
+    public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
-        return BCrypt.Net.BCrypt.Verify(_jwtSecret + password, storedHash);
+        return BCrypt.Net.BCrypt.Verify(_jwtSecret + Convert.ToBase64String(storedSalt), Convert.ToBase64String(storedSalt));
     }
 }
