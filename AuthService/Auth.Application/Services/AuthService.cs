@@ -54,6 +54,6 @@ public class AuthService: IAuthService
             return OperationResult<string>.CreateSuccessResult(token);
         }
 
-        return OperationResult<string>.CreateSuccessResult("not done");
+        return OperationResult<string>.CreateFailure("Credentials not matching");
     }
 }

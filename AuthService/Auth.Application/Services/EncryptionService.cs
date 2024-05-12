@@ -1,4 +1,6 @@
-﻿using Auth.Application.Interfaces;
+﻿using System.Text;
+using Auth.Application.Interfaces;
+using BCrypt.Net;
 using Microsoft.Extensions.Configuration;
 
 namespace Auth.Application.Services;
@@ -15,16 +17,25 @@ public class EncryptionService : IEncryptionService
 
     public void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
     {
+        // Generate a salt and hash the password with the secret appended if needed
         string salt = BCrypt.Net.BCrypt.GenerateSalt();
-
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(_jwtSecret + password, salt);
+
+        // Convert the hashed password to a byte array
         passwordHash = System.Text.Encoding.UTF8.GetBytes(hashedPassword);
 
-        passwordSalt = System.Text.Encoding.UTF8.GetBytes(salt);
+        // Extract just the salt part of the hash to show how it can be done, though it's not necessary
+        string extractedSalt = salt; // BCrypt salt can be extracted from hashedPassword if needed
+        passwordSalt = System.Text.Encoding.UTF8.GetBytes(extractedSalt);
     }
 
     public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
-        return BCrypt.Net.BCrypt.Verify(_jwtSecret + Convert.ToBase64String(storedSalt), Convert.ToBase64String(storedSalt));
+        // Convert the stored hash from bytes back to string
+        string hashString = System.Text.Encoding.UTF8.GetString(storedHash);
+
+        // Verify the password (with secret appended) against the stored hash
+        return BCrypt.Net.BCrypt.Verify(_jwtSecret + password, hashString);
     }
+
 }
