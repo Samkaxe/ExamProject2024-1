@@ -1,4 +1,4 @@
-﻿using Auth.API.DTOs;
+﻿using Auth.Application.DTOs;
 using Auth.Application.Interfaces;
 using Auth.Domain.BusinessEntities;
 using Auth.Domain.OperationResults;

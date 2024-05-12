@@ -1,4 +1,4 @@
-﻿using Auth.API.DTOs;
+﻿using Auth.Application.DTOs;
 using Auth.Application.Interfaces;
 using Auth.Domain.OperationResults;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +21,16 @@ public class AuthController: ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<OperationResult<string>>> Register([FromBody] RegisterModel model)
     {
-        var result = await _authService.Register(model);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        OperationResult<string> result = await _authService.Register(model);
+
+        if (!result.Success)
+        {
+            return StatusCode(500, result.ErrorMessage);
+        }
         return Ok(result);
     }
 
@@ -29,6 +38,17 @@ public class AuthController: ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<OperationResult<string>>> Login([FromBody] LoginModel model)
     {
-        return await _authService.Login(model);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        OperationResult<string> result = await _authService.Login(model);
+
+        if (!result.Success)
+        {
+            return StatusCode(500, result.ErrorMessage);
+        }
+        return Ok(result);
     }
 }
