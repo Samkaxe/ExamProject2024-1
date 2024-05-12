@@ -1,32 +1,45 @@
 ﻿using Auth.Domain.BusinessEntities;
+using Auth.Infrastructure.Database;
 using Auth.Infrastructure.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Auth.Infrastructure.Services;
 
 public class CredentialRepository: ICredentialRepository
 {
-    // Dictionary to simulate data storage (replace with database later)
-    private readonly Dictionary<string, Credentials> _credentialsStore = new Dictionary<string, Credentials>();
+    private readonly DatabaseContext _databaseContext;
 
-    public Task<Credentials> RegisterCredentials(Credentials credentials)
+    public CredentialRepository(DatabaseContext databaseContext)
     {
-        if (_credentialsStore.ContainsKey(credentials.Email))
-        {
-            throw new Exception("Email is already in use"); // Simulate duplicate email error
-        }
-
-        _credentialsStore.Add(credentials.Email, credentials);
-        credentials.UserId = Guid.NewGuid();
-        return Task.FromResult(credentials);
+        _databaseContext = databaseContext;
+        _databaseContext.Database.EnsureCreatedAsync();
     }
 
-    public Task<Credentials> GetCredentialsByEmailAsync(string email)
+    public async Task<Credentials> RegisterCredentials(Credentials credentials)
     {
-        if (_credentialsStore.TryGetValue(email, out var credentials))
+        // Check for existing email (using the DbSet)
+        if (await _databaseContext.Credentials.AnyAsync(c => c.Email == credentials.Email)) 
         {
-            return Task.FromResult(credentials);
+            throw new Exception("Email is already in use");
         }
 
-        throw new Exception("Credentials not found for the given email"); // Simulate not found error
+        // Add to the DbSet
+        await _databaseContext.Credentials.AddAsync(credentials);
+        await _databaseContext.SaveChangesAsync(); // Save changes to the database
+        return credentials;
+    }
+
+    public async Task<Credentials> GetCredentialsByEmailAsync(string email)
+    {
+        // Get credentials from the DbSet
+        var credentials = await _databaseContext.Credentials
+            .FirstOrDefaultAsync(c => c.Email == email);
+
+        if (credentials == null)
+        {
+            throw new Exception("Credentials not found for the given email");
+        }
+
+        return credentials;
     }
 }

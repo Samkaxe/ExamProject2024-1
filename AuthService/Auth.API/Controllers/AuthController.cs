@@ -29,7 +29,7 @@ public class AuthController: ControllerBase
 
         if (!result.Success)
         {
-            return StatusCode(500, result.ErrorMessage);
+            return StatusCode(500, result);
         }
         return Ok(result);
     }
@@ -47,7 +47,7 @@ public class AuthController: ControllerBase
 
         if (!result.Success)
         {
-            return StatusCode(500, result.ErrorMessage);
+            return StatusCode(500, result);
         }
         return Ok(result);
     }

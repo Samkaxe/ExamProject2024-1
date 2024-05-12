@@ -32,10 +32,17 @@ public class AuthService: IAuthService
             Salt = passwordSalt
         };
 
-        var createdCredentials = await _credentialRepository.RegisterCredentials(credentials);
-        string bearerToken = _tokenService.GenerateToken(createdCredentials);
+        try
+        {
+            var createdCredentials = await _credentialRepository.RegisterCredentials(credentials);
+            string bearerToken = _tokenService.GenerateToken(createdCredentials);
 
-        return OperationResult<string>.CreateSuccessResult(bearerToken);
+            return OperationResult<string>.CreateSuccessResult(bearerToken);
+        }
+        catch (Exception e)
+        {
+            return OperationResult<string>.CreateFailure(e.Message);
+        }
     }
 
     public async Task<OperationResult<string>> Login(LoginModel loginModel)
