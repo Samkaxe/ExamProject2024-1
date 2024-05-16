@@ -1,39 +1,47 @@
 version: '3.8'
 services:
-  mongo:
-    image: mongo:latest
-    volumes:
-      - mongodb_data_container:/data/db
-    ports:
-      - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-    networks:
-      - app-network
-  
-  redis:
-    image: redis:latest
-    ports:
-      - 6379:6379
-    networks:
-      - app-network
+#  mongo:
+#    image: mongo:latest
+#    volumes:
+#      - mongodb_data_container:/data/db
+#    ports:
+#      - 27017:27017
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: example
+#    networks:
+#      - app-network
+#  
+#  redis:
+#    image: redis:latest
+#    ports:
+#      - 6379:6379
+#    networks:
+#      - app-network
 
-  inventoryservice:
-    build:
-      context: .
-      dockerfile: ./InventoryService/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80;http://+:443
-    ports:
-      - 5001:80
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - app-network
+#  inventoryservice:
+#    build:
+#      context: .
+#      dockerfile: ./InventoryService/Dockerfile
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - ASPNETCORE_URLS=http://+:80;http://+:443
+#    ports:
+#      - 5001:80
+#    depends_on:
+#      - mongo
+#      - redis
+#    networks:
+#      - app-network
   
+  auth-sql:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=auth_database
+    volumes:
+      - auth_data:/var/lib/postgresql/data
   authservice:
     build:
       context: .
@@ -42,27 +50,28 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80;http://+:443
     ports:
-      - 5002:80
+      - "5002:80"
     networks:
       - app-network
   
-  checkoutservice:
-    build:
-      context: .
-      dockerfile: ./Checkoutservice/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80;http://+:443
-    ports:
-      - 5003:80
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - app-network
+#  checkoutservice:
+#    build:
+#      context: .
+#      dockerfile: ./Checkoutservice/Dockerfile
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - ASPNETCORE_URLS=http://+:80;http://+:443
+#    ports:
+#      - 5003:80
+#    depends_on:
+#      - mongo
+#      - redis
+#    networks:
+#      - app-network
 
 volumes:
   mongodb_data_container:
+  auth_data:
 
 networks:
   app-network:
