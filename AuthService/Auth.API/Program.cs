@@ -8,7 +8,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 Auth.Application.DependencyResolvement.DependencyResolverService.RegisterApplicationLayer(builder.Services);
-Auth.Infrastructure.DependencyResolvement.DependencyResolverService.RegisterInfrastructureLayer(builder.Services,builder.Configuration);
+Auth.Infrastructure.DependencyResolvement.DependencyResolverService.RegisterInfrastructureLayer(builder.Services);
 
 var app = builder.Build();
 
