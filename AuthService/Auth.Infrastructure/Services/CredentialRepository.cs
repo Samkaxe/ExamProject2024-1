@@ -34,7 +34,7 @@ public class CredentialRepository : ICredentialRepository
             // Insert new credentials
             using (var cmd = new NpgsqlCommand("INSERT INTO Credentials (UserId, Email, PasswordHash, Salt) VALUES (@UserId, @Email, @PasswordHash, @Salt)", conn))
             {
-                cmd.Parameters.AddWithValue("@UserId", credentials.UserId);
+                cmd.Parameters.AddWithValue("@UserId", Guid.NewGuid());
                 cmd.Parameters.AddWithValue("@Email", credentials.Email);
                 cmd.Parameters.AddWithValue("@PasswordHash", credentials.PasswordHash);
                 cmd.Parameters.AddWithValue("@Salt", credentials.Salt);
