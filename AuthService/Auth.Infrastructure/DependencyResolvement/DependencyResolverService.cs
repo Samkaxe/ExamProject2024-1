@@ -15,6 +15,6 @@ public static class DependencyResolverService
         //     options.UseSqlite("Data Source=auth.db"));
         
         services.AddDbContext<DatabaseContext>(options => 
-            options.UseNpgsql("Host=auth-sql;Database=auth_database;Username=user;Password=pass"));
+            options.UseNpgsql("Host=authsql;Port=5432;Database=auth_database;Username=user;Password=password;"));
     }
 }

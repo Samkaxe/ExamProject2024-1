@@ -34,7 +34,7 @@ services:
 #    networks:
 #      - app-network
   
-  auth-sql:
+  authsql:
     image: postgres:latest
     environment:
       - POSTGRES_USER=user
@@ -42,6 +42,9 @@ services:
       - POSTGRES_DB=auth_database
     volumes:
       - auth_data:/var/lib/postgresql/data
+    networks: 
+      - app-network
+  
   authservice:
     build:
       context: .
@@ -53,7 +56,9 @@ services:
       - "5002:80"
     networks:
       - app-network
-  
+    depends_on: 
+      - authsql
+
 #  checkoutservice:
 #    build:
 #      context: .
