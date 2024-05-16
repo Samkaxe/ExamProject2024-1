@@ -1,5 +1,6 @@
 ﻿using Auth.Infrastructure.Database;
 using Auth.Infrastructure.Interfaces;
+using Auth.Infrastructure.Migrations;
 using Auth.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,10 +13,13 @@ public static class DependencyResolverService
     public static void RegisterInfrastructureLayer(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ICredentialRepository, CredentialRepository>();
-        // services.AddDbContext<DatabaseContext>(options =>
-        //     options.UseSqlite("Data Source=auth.db"));
         
-        services.AddDbContext<DatabaseContext>(options => 
-            options.UseNpgsql(configuration.GetConnectionString("database")));
+        // Add the DatabaseInitializer
+        services.AddScoped<DatabaseInitializer>();
+
+        // Create a scope to resolve the initializer and ensure the database is created
+        var serviceProvider = services.BuildServiceProvider();
+        var initializer = serviceProvider.GetRequiredService<DatabaseInitializer>();
+        initializer.EnsureDatabaseCreated().Wait(); // Ensure creation synchronously
     }
 }

@@ -41,7 +41,7 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=auth_database
     volumes:
-      - auth_data:/var/lib/postgresql/data
+      - auth_data1:/var/lib/postgresql/data
     networks: 
       - app-network
   
@@ -76,7 +76,7 @@ services:
 
 volumes:
   mongodb_data_container:
-  auth_data:
+  auth_data1:
 
 networks:
   app-network:
