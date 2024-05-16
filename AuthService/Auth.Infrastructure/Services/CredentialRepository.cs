@@ -24,8 +24,8 @@ public class CredentialRepository : ICredentialRepository
             using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM Credentials WHERE Email = @Email", conn))
             {
                 cmd.Parameters.AddWithValue("@Email", credentials.Email);
-                int exists = (int)await cmd.ExecuteScalarAsync();
-                if (exists > 0)
+                long count = (long)await cmd.ExecuteScalarAsync(); // Cast to long
+                if (count > 0)
                 {
                     throw new Exception("Email is already in use");
                 }
@@ -63,7 +63,7 @@ public class CredentialRepository : ICredentialRepository
 
                     return new Credentials
                     {
-                        UserId = new Guid((byte[])reader["UserId"]),
+                        UserId = reader.GetGuid(reader.GetOrdinal("UserId")),
                         Email = reader.GetString(reader.GetOrdinal("Email")),
                         PasswordHash = (byte[])reader["PasswordHash"],
                         Salt = (byte[])reader["Salt"]
