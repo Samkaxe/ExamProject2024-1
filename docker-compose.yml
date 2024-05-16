@@ -37,15 +37,12 @@ services:
   authservice:
     build:
       context: .
-      dockerfile: ./AuthService/Dockerfile
+      dockerfile: ./AuthService/Auth.API/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80;http://+:443
     ports:
       - 5002:80
-    depends_on:
-      - mongo
-      - redis
     networks:
       - app-network
   
