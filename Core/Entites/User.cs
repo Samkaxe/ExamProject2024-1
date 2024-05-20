@@ -11,4 +11,6 @@ public class User
 
     public string Username { get; set; }
     public string Email { get; set; }
+    public string PasswordHash { get; set; } // Store hashed passwords
+    public List<string> Roles { get; set; } // For authorization
 }

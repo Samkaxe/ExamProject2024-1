@@ -32,8 +32,25 @@ public class ProductController : ControllerBase
             return Problem("Unable to establish connection to MongoDB.");
         }
     }
+    
+    [HttpGet("brands")]
+    public IActionResult GetAllBrands()
+    {
+        var brands = _mongoService.Brands.Find(_ => true).ToList();
+        var brandDtos = _mapper.Map<List<BrandDto>>(brands);
+        return Ok(brandDtos);
+    }
+    
+    [HttpPost("brands")]
+    public IActionResult CreateBrand([FromBody] BrandDto brandDto)
+    {
+        var brand = _mapper.Map<Brand>(brandDto);
+        _mongoService.Brands.InsertOne(brand);
+        var brandDtos = _mapper.Map<BrandDto>(brand);
+        return CreatedAtAction(nameof(GetAllBrands), new { id = brandDtos.Id }, brandDto);
+    }
 
-    [HttpPost]
+    [HttpPost("products")]
     public IActionResult CreateProduct([FromBody] CreateProductDto productDto)
     {
         var product = _mapper.Map<Product>(productDto);
@@ -42,7 +59,7 @@ public class ProductController : ControllerBase
         return CreatedAtAction(nameof(GetAllProducts), new { id = productDtos.Id }, productDto);
     }
 
-    [HttpGet]
+    [HttpGet("products")]
     public ActionResult<List<ProductDto>> GetAllProducts()
     {
         var products = _mongoService.Products.Find(product => true).ToList();
@@ -62,4 +79,22 @@ public class ProductController : ControllerBase
 
         return productDtos;
     }
+    
+    [HttpGet("categories")]
+    public IActionResult GetAllCategories()
+    {
+        var categories = _mongoService.Categories.Find(_ => true).ToList();
+        var categoryDtos = _mapper.Map<List<CategoryDto>>(categories);
+        return Ok(categoryDtos);
+    }
+
+    [HttpPost("categories")]
+    public IActionResult CreateCategory([FromBody] CategoryDto categoryDto)
+    {
+        var category = _mapper.Map<Category>(categoryDto);
+        _mongoService.Categories.InsertOne(category);
+        var categoryDtos = _mapper.Map<CategoryDto>(category);
+        return CreatedAtAction(nameof(GetAllCategories), new { id = categoryDtos.Id }, categoryDto);
+    }
+    
 }
