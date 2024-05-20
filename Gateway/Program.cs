@@ -1,3 +1,5 @@
+using Gateway;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,18 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(builder =>
-        {
-            builder.AllowAnyOrigin() // Allow any origin
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-        });
-});
-
-Auth.Application.DependencyResolvement.DependencyResolverService.RegisterApplicationLayer(builder.Services);
-Auth.Infrastructure.DependencyResolvement.DependencyResolverService.RegisterInfrastructureLayer(builder.Services);
+ServiceConfiguration.ConfigureServices(builder.Services,builder);
 
 var app = builder.Build();
 
@@ -33,7 +24,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthorization();
 
-app.UseCors();
+app.MapReverseProxy();
 
 app.MapControllers();
 
