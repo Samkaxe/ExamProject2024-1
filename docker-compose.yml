@@ -34,6 +34,19 @@ services:
 #    networks:
 #      - app-network
   
+  gateway:
+    build:
+      context: .
+      dockerfile: Gateway/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80;http://+:443
+    ports:
+      - "9999:80"
+      - "10000:443"
+    networks: 
+      app-network:
+  
   authsql:
     image: postgres:latest
     environment:
