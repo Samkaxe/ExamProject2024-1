@@ -7,6 +7,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+        {
+            builder.AllowAnyOrigin() // Allow any origin
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+});
+
 Auth.Application.DependencyResolvement.DependencyResolverService.RegisterApplicationLayer(builder.Services);
 Auth.Infrastructure.DependencyResolvement.DependencyResolverService.RegisterInfrastructureLayer(builder.Services);
 
@@ -19,9 +29,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseCors();
 
 app.MapControllers();
 

@@ -40,10 +40,9 @@ services:
       dockerfile: Gateway/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80;http://+:443
+      - ASPNETCORE_URLS=http://+:80
     ports:
       - "9999:80"
-      - "10000:443"
     networks: 
       app-network:
   
