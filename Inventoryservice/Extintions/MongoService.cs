@@ -4,92 +4,85 @@ using Core.Dtos;
 using Core.Entites;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Newtonsoft.Json.Linq;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
+using Polly.Wrap;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace InventoryService.Extintions;
+namespace InventoryService.Extintions
+{
     public class MongoService
     {
         private readonly IMongoDatabase _database;
+        private readonly IAsyncPolicy _policyWrap;
+        private readonly ILogger<MongoService> _logger;
 
-        public MongoService(IConfiguration configuration)
+        public MongoService(IConfiguration configuration, IAsyncPolicy policyWrap, ILogger<MongoService> logger)
         {
+            _policyWrap = policyWrap;
+            _logger = logger;
+
             try
             {
                 var client = new MongoClient(configuration["MongoSettings:ConnectionString"]);
                 _database = client.GetDatabase("ecommerce"); // Hardcoded database name
 
                 // Create collections if they don't exist
-                CreateCollections();
-                CreateIndexes();
-               // var mongoService = new MongoService(configuration);
-               // mongoService.InsertMockData("mockData.json");
-               
-             //  CreateUsersWithRoles();
+                _policyWrap.ExecuteAsync(async () =>
+                {
+                    await CreateCollections();
+                    await CreateIndexes();
+                }).Wait();
             }
             catch (Exception ex)
             {
                 // Handle connection error
+                _logger.LogError(ex, "Failed to connect to MongoDB.");
                 throw new Exception("Failed to connect to MongoDB.", ex);
             }
         }
-        
-       
-        //In the Product collection, BrandId and CategoryId are potential candidates for indexing,
-        //as they are likely to be used in queries to retrieve products by brand or category.
-        //In the Order collection, UserId might be a field commonly used for filtering orders by user.
-        private void CreateIndexes()
-        {
-            // Index for Product collection
-            /*
-             * Here, we're obtaining a reference to the "Products" collection
-             * in the MongoDB database _database. Similarly, we get a reference to the "Orders" collection for indexing orders.
-             */
-            var productCollection = _database.GetCollection<Product>("Products");
-            /*
-             * We use Builders<Product>.IndexKeys to construct index key definitions for the Product collection.
-             * In this case, we're specifying a compound index with ascending sorting on the BrandId and CategoryId fields.
-             * This means MongoDB will create an index that orders documents based on both BrandId and CategoryId.
-             */
-            var productIndexKeys = Builders<Product>.IndexKeys.Ascending(p => p.BrandId).Ascending(p => p.CategoryId);
-            var productIndexModel = new CreateIndexModel<Product>(productIndexKeys);
-            /*
-             * We create an index model for the Product collection using the defined index keys.
-             * An index model encapsulates all the information needed to create an index,
-             * including the keys and any additional options.
-             */
-            productCollection.Indexes.CreateOne(productIndexModel);
 
-            // Index for Order collection
-            var orderCollection = _database.GetCollection<Order>("Orders");
-            var orderIndexKeys = Builders<Order>.IndexKeys.Ascending(o => o.UserId);
-            var orderIndexModel = new CreateIndexModel<Order>(orderIndexKeys);
-            /*
-             * These indexes help improve query performance when filtering, sorting, or aggregating data based on the indexed fields.
-             */
-            orderCollection.Indexes.CreateOne(orderIndexModel);
+        private async Task CreateIndexes()
+        {
+            await _policyWrap.ExecuteAsync(async () =>
+            {
+                var productCollection = _database.GetCollection<Product>("Products");
+                var productIndexKeys = Builders<Product>.IndexKeys.Ascending(p => p.BrandId).Ascending(p => p.CategoryId);
+                var productIndexModel = new CreateIndexModel<Product>(productIndexKeys);
+                await productCollection.Indexes.CreateOneAsync(productIndexModel);
+
+                var orderCollection = _database.GetCollection<Order>("Orders");
+                var orderIndexKeys = Builders<Order>.IndexKeys.Ascending(o => o.UserId);
+                var orderIndexModel = new CreateIndexModel<Order>(orderIndexKeys);
+                await orderCollection.Indexes.CreateOneAsync(orderIndexModel);
+            });
         }
 
-        private void CreateCollections()
+        private async Task CreateCollections()
         {
-            CreateCollection<User>("Users");
-            CreateCollection<Product>("Products");
-            CreateCollection<Brand>("Brands");
-            CreateCollection<Category>("Categories");
-            CreateCollection<Order>("Orders");
-            
-            
+            await _policyWrap.ExecuteAsync(async () =>
+            {
+                await CreateCollection<User>("Users");
+                await CreateCollection<Product>("Products");
+                await CreateCollection<Brand>("Brands");
+                await CreateCollection<Category>("Categories");
+                await CreateCollection<Order>("Orders");
+            });
         }
-        
-       
-        private void CreateCollection<T>(string collectionName)
+
+        private async Task CreateCollection<T>(string collectionName)
         {
             try
             {
-                _database.CreateCollection(collectionName);
+                await _database.CreateCollectionAsync(collectionName);
             }
             catch (Exception ex)
             {
-              
+                _logger.LogError(ex, $"Failed to create collection '{collectionName}'.");
                 throw new Exception($"Failed to create collection '{collectionName}'.", ex);
             }
         }
@@ -98,27 +91,31 @@ namespace InventoryService.Extintions;
         {
             try
             {
-               
-                _database.Client.ListDatabaseNames();
+                _policyWrap.ExecuteAsync(async () =>
+                {
+                    await _database.Client.ListDatabaseNamesAsync();
+                }).Wait();
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-             
+                _logger.LogError(ex, "Failed to establish connection to MongoDB.");
                 return false;
             }
         }
 
-    
         private IMongoCollection<T> GetCollection<T>(string collectionName)
         {
             try
             {
-                return _database.GetCollection<T>(collectionName);
+                return _policyWrap.ExecuteAsync(async () =>
+                {
+                    return await Task.FromResult(_database.GetCollection<T>(collectionName));
+                }).Result;
             }
             catch (Exception ex)
             {
-               
+                _logger.LogError(ex, $"Failed to retrieve collection '{collectionName}'.");
                 throw new Exception($"Failed to retrieve collection '{collectionName}'.", ex);
             }
         }
@@ -128,63 +125,132 @@ namespace InventoryService.Extintions;
         public IMongoCollection<Brand> Brands => GetCollection<Brand>("Brands");
         public IMongoCollection<Category> Categories => GetCollection<Category>("Categories");
         public IMongoCollection<Order> Orders => GetCollection<Order>("Orders");
+
+        public List<Brand> GetAllBrands()
+        {
+            return _policyWrap.ExecuteAsync(async () =>
+            {
+                return await Task.FromResult(Brands.Find(_ => true).ToList());
+            }).Result;
+        }
+
+        public void InsertBrand(Brand brand)
+        {
+            _policyWrap.ExecuteAsync(async () =>
+            {
+                await Brands.InsertOneAsync(brand);
+            }).Wait();
+        }
+
+        public List<Category> GetAllCategories()
+        {
+            return _policyWrap.ExecuteAsync(async () =>
+            {
+                return await Task.FromResult(Categories.Find(_ => true).ToList());
+            }).Result;
+        }
+
+        public void InsertCategory(Category category)
+        {
+            _policyWrap.ExecuteAsync(async () =>
+            {
+                await Categories.InsertOneAsync(category);
+            }).Wait();
+        }
+
+        public List<Product> GetAllProducts()
+        {
+            return _policyWrap.ExecuteAsync(async () =>
+            {
+                return await Task.FromResult(Products.Find(_ => true).ToList());
+            }).Result;
+        }
+
+        public Brand GetBrandById(string brandId)
+        {
+            var objectId = new ObjectId(brandId);
+            return _policyWrap.ExecuteAsync(async () =>
+            {
+                return await Task.FromResult(Brands.Find(b => b.BrandId == objectId).FirstOrDefault());
+            }).Result;
+        }
         
-       // security 
-       // User Management Methods
-       public async Task<bool> RegisterUser(UserRegisterDto userDto)
-       {
-           if (await Users.Find(u => u.Email == userDto.Email).AnyAsync())
-               return false;
+        public Category GetCategoryById(string categoryId)
+        {
+            var objectId = new ObjectId(categoryId);
+            return _policyWrap.ExecuteAsync(async () =>
+            {
+                return await Task.FromResult(Categories.Find(c => c.CategoryId == objectId).FirstOrDefault());
+            }).Result;
+        }
 
-           var user = new User
-           {
-               Username = userDto.Username,
-               Email = userDto.Email,
-               PasswordHash = HashPassword(userDto.Password),
-               Roles = new List<string> { "User" }
-           };
+        public void InsertProduct(Product product)
+        {
+            _policyWrap.ExecuteAsync(async () =>
+            {
+                await Products.InsertOneAsync(product);
+            }).Wait();
+        }
 
-           await Users.InsertOneAsync(user);
-           return true;
-       }
+        // User Management Methods
+        public async Task<bool> RegisterUser(UserRegisterDto userDto)
+        {
+            return await _policyWrap.ExecuteAsync(async () =>
+            {
+                if (await Users.Find(u => u.Email == userDto.Email).AnyAsync())
+                    return false;
 
-       public async Task<User> AuthenticateUser(UserLoginDto userDto)
-       {
-           var user = await Users.Find(u => u.Email == userDto.Email).FirstOrDefaultAsync();
-           if (user == null || !VerifyPassword(userDto.Password, user.PasswordHash))
-               return null;
+                var user = new User
+                {
+                    Username = userDto.Username,
+                    Email = userDto.Email,
+                    PasswordHash = HashPassword(userDto.Password),
+                    Roles = new List<string> { "User" }
+                };
 
-           return user;
-       }
+                await Users.InsertOneAsync(user);
+                return true;
+            });
+        }
 
-       private string HashPassword(string password)
-       {
-           using (var hmac = new HMACSHA512())
-           {
-               var salt = hmac.Key;
-               var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-               return $"{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}";
-           }
-       }
+        public async Task<User> AuthenticateUser(UserLoginDto userDto)
+        {
+            return await _policyWrap.ExecuteAsync(async () =>
+            {
+                var user = await Users.Find(u => u.Email == userDto.Email).FirstOrDefaultAsync();
+                if (user == null || !VerifyPassword(userDto.Password, user.PasswordHash))
+                    return null;
 
-       private bool VerifyPassword(string password, string storedHash)
-       {
-           var parts = storedHash.Split(':');
-           if (parts.Length != 2)
-               return false;
+                return user;
+            });
+        }
 
-           var salt = Convert.FromBase64String(parts[0]);
-           var storedPasswordHash = parts[1];
+        private string HashPassword(string password)
+        {
+            using (var hmac = new HMACSHA512())
+            {
+                var salt = hmac.Key;
+                var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return $"{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}";
+            }
+        }
 
-           using (var hmac = new HMACSHA512(salt))
-           {
-               var computedHash = Convert.ToBase64String(hmac
-                   .ComputeHash(Encoding.UTF8.GetBytes(password)));
-               Console.WriteLine($"Computed hash: {computedHash}");
-               Console.WriteLine($"Stored hash: {storedPasswordHash}");
-               return computedHash == storedPasswordHash;
-           }
-       }
+        private bool VerifyPassword(string password, string storedHash)
+        {
+            var parts = storedHash.Split(':');
+            if (parts.Length != 2)
+                return false;
+
+            var salt = Convert.FromBase64String(parts[0]);
+            var storedPasswordHash = parts[1];
+
+            using (var hmac = new HMACSHA512(salt))
+            {
+                var computedHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(password)));
+                Console.WriteLine($"Computed hash: {computedHash}");
+                Console.WriteLine($"Stored hash: {storedPasswordHash}");
+                return computedHash == storedPasswordHash;
+            }
+        }
     }
-
-    
+}

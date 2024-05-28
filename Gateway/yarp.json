@@ -7,6 +7,10 @@
     }
   },
   "AllowedHosts": "*",
+  "FeatureFlags": {
+    "EnableAuthRoutes": true,
+    "EnableProductRoutes": true
+  },
   "ReverseProxy": {
     "Clusters": {
       "Authentication": {
@@ -14,12 +18,28 @@
           "Auth_0": {
             "Address": "http://authservice:80"
           }
+        },
+        "HealthCheck": {
+          "Active": {
+            "Enabled": true,
+            "Interval": "00:00:10",
+            "Timeout": "00:00:05",
+            "Path": "/health"
+          }
         }
       },
       "Inventory": {
         "Destinations": {
           "Inventory_0": {
             "Address": "http://inventoryservice:80"
+          }
+        },
+        "HealthCheck": {
+          "Active": {
+            "Enabled": true,
+            "Interval": "00:00:10",
+            "Timeout": "00:00:05",
+            "Path": "/health"
           }
         }
       }
@@ -29,18 +49,45 @@
         "ClusterId": "Authentication",
         "Match": {
           "Path": "/Auth/register"
-        }
+        },
+        "Transforms": [
+          {
+            "RequestHeadersCopy": "true"
+          }
+        ]
       },
       "login": {
         "ClusterId": "Authentication",
         "Match": {
           "Path": "/Auth/login"
-        }
+        },
+        "Transforms": [
+          {
+            "RequestHeadersCopy": "true"
+          }
+        ]
       },
       "products": {
         "ClusterId": "Inventory",
         "Match": {
           "Path": "/Product"
+        },
+        "Transforms": [
+          {
+            "RequestHeadersCopy": "true"
+          }
+        ]
+      }
+    },
+    "Policies": {
+      "Default": {
+        "Retry": {
+          "Count": 3,
+          "BaseInterval": "00:00:02"
+        },
+        "CircuitBreaker": {
+          "FailuresAllowedBeforeBreaking": 3,
+          "DurationOfBreak": "00:01:00"
         }
       }
     }

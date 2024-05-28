@@ -1,0 +1,48 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "ReverseProxy": {
+    "Clusters": {
+      "Authentication": {
+        "Destinations": {
+          "Auth_0": {
+            "Address": "http://authservice:80"
+          }
+        }
+      },
+      "Inventory": {
+        "Destinations": {
+          "Inventory_0": {
+            "Address": "http://inventoryservice:80"
+          }
+        }
+      }
+    },
+    "Routes": {
+      "register": {
+        "ClusterId": "Authentication",
+        "Match": {
+          "Path": "/Auth/register"
+        }
+      },
+      "login": {
+        "ClusterId": "Authentication",
+        "Match": {
+          "Path": "/Auth/login"
+        }
+      },
+      "products": {
+        "ClusterId": "Inventory",
+        "Match": {
+          "Path": "/Product"
+        }
+      }
+    }
+  }
+}
