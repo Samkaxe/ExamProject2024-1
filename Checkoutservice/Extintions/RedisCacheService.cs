@@ -37,7 +37,7 @@ public class RedisCacheService
         }
     }
 
-    // Example of logging within a method
+   
     public string Get(string key)
     {
         try
