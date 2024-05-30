@@ -1,8 +1,8 @@
 ﻿{
   "Logging": {
     "LogLevel": {
-      "Default": "Information",
-      "Microsoft": "Warning",
+      "Default": "Debug",
+      "Microsoft": "Information",
       "Microsoft.Hosting.Lifetime": "Information"
     }
   },
@@ -13,18 +13,10 @@
   },
   "ReverseProxy": {
     "Clusters": {
-      "Authentication": {
+      "Authentication":   {
         "Destinations": {
           "Auth_0": {
             "Address": "http://authservice:80"
-          }
-        },
-        "HealthCheck": {
-          "Active": {
-            "Enabled": true,
-            "Interval": "00:00:10",
-            "Timeout": "00:00:05",
-            "Path": "/health"
           }
         }
       },
@@ -32,14 +24,6 @@
         "Destinations": {
           "Inventory_0": {
             "Address": "http://inventoryservice:80"
-          }
-        },
-        "HealthCheck": {
-          "Active": {
-            "Enabled": true,
-            "Interval": "00:00:10",
-            "Timeout": "00:00:05",
-            "Path": "/health"
           }
         }
       }
@@ -70,7 +54,7 @@
       "products": {
         "ClusterId": "Inventory",
         "Match": {
-          "Path": "/Product"
+          "Path": "/Product/{**catch-all}"
         },
         "Transforms": [
           {
