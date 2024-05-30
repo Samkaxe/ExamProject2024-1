@@ -28,19 +28,22 @@ namespace InventoryService.Extintions
 
             try
             {
-                var client = new MongoClient(configuration["MongoSettings:ConnectionString"]);
-                _database = client.GetDatabase("ecommerce"); // Hardcoded database name
+                var connectionString = configuration["MongoSettings:ConnectionString"];
+                _logger.LogInformation($"Connecting to MongoDB with connection string: {connectionString}");
 
-                // Create collections if they don't exist
+                var client = new MongoClient(connectionString);
+                _database = client.GetDatabase("ecommerce");
+
                 _policyWrap.ExecuteAsync(async () =>
                 {
+                    _logger.LogInformation("Creating collections...");
                     await CreateCollections();
+                    _logger.LogInformation("Creating indexes...");
                     await CreateIndexes();
                 }).Wait();
             }
             catch (Exception ex)
             {
-                // Handle connection error
                 _logger.LogError(ex, "Failed to connect to MongoDB.");
                 throw new Exception("Failed to connect to MongoDB.", ex);
             }
