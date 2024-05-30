@@ -1,17 +1,12 @@
-using Serilog;
-using Checkoutservice.Extintions;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Polly;
-using Polly.Extensions.Http;
-using Polly.Retry;
-using Polly.CircuitBreaker;
-using System;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -53,6 +48,22 @@ builder.Services.AddSingleton<RedisCacheService>(provider =>
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
+
+// Configure OpenTelemetry with Zipkin
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resourceBuilder => resourceBuilder.AddService("CheckoutService"))
+    .WithTracing(tracingBuilder =>
+    {
+        tracingBuilder
+            .AddSource("CheckoutService")
+            .SetSampler(new AlwaysOnSampler())
+            .AddAspNetCoreInstrumentation()
+            //.AddConsoleExporter()
+            .AddZipkinExporter(options =>
+            {
+                options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans");
+            });
+    });
 
 var app = builder.Build();
 

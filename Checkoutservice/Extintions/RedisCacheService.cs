@@ -1,8 +1,7 @@
-﻿using Polly.CircuitBreaker;
+﻿using StackExchange.Redis;
 using Polly.Retry;
-using StackExchange.Redis;
-
-namespace Checkoutservice.Extintions;
+using Polly.CircuitBreaker;
+using System.Diagnostics;
 
 public class RedisCacheService
 {
@@ -10,6 +9,7 @@ public class RedisCacheService
     private readonly ILogger<RedisCacheService> _logger;
     private readonly AsyncRetryPolicy _retryPolicy;
     private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
+    private static readonly ActivitySource ActivitySource = new ActivitySource("CheckoutService");
 
     public RedisCacheService(string connectionString, ILogger<RedisCacheService> logger, AsyncRetryPolicy retryPolicy, AsyncCircuitBreakerPolicy circuitBreakerPolicy)
     {
@@ -21,6 +21,7 @@ public class RedisCacheService
 
     private async Task<IDatabase> ConnectToRedis(string connectionString)
     {
+        using var activity = ActivitySource.StartActivity("ConnectToRedis");
         return await _retryPolicy.ExecuteAsync(async () =>
         {
             return await _circuitBreakerPolicy.ExecuteAsync(async () =>
@@ -42,6 +43,7 @@ public class RedisCacheService
 
     public void Set(string key, string value, TimeSpan expiry)
     {
+        using var activity = ActivitySource.StartActivity("Set");
         try
         {
             _db.StringSet(key, value, expiry);
@@ -56,6 +58,7 @@ public class RedisCacheService
 
     public string Get(string key)
     {
+        using var activity = ActivitySource.StartActivity("Get");
         try
         {
             var value = _db.StringGet(key);
@@ -71,6 +74,7 @@ public class RedisCacheService
 
     public void SetCheckoutSession(string userId, string orderId)
     {
+        using var activity = ActivitySource.StartActivity("SetCheckoutSession");
         var key = $"checkout:{userId}";
         try
         {
@@ -87,6 +91,7 @@ public class RedisCacheService
 
     public string GetCheckoutOrderId(string userId)
     {
+        using var activity = ActivitySource.StartActivity("GetCheckoutOrderId");
         var key = $"checkout:{userId}";
         try
         {
