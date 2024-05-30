@@ -41,8 +41,9 @@ public static class ServiceConfiguration
             services.AddOpenTelemetry()
                 .WithTracing(providerBuilder => providerBuilder
                     .AddSource("Yarp.ReverseProxy")
+                    .AddSource("TraceMiddleware")
                     .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService("Gateway")) // Trace source will be called gateway
+                        .AddService("Gateway"))
                     .AddAspNetCoreInstrumentation() // For incoming requests
                     .AddHttpClientInstrumentation() // For outgoing requests
 
@@ -52,6 +53,7 @@ public static class ServiceConfiguration
                         options.AgentPort = 6831;     
                     })
                 );
+            
         }
 
         private static void ConfigureReverseProxy(IServiceCollection services, WebApplicationBuilder builder)

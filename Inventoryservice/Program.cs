@@ -22,6 +22,7 @@ builder.Services.AddOpenTelemetry()
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Inventory-Service"))
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
+        .AddMongoDBInstrumentation()
         .AddJaegerExporter(options =>
         {
             options.AgentHost = "jaeger";

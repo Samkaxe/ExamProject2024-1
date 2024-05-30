@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace InventoryService.Extintions
 {
@@ -31,7 +32,10 @@ namespace InventoryService.Extintions
                 var connectionString = configuration["MongoSettings:ConnectionString"];
                 _logger.LogInformation($"Connecting to MongoDB with connection string: {connectionString}");
 
-                var client = new MongoClient(connectionString);
+                var clientSettings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
+                clientSettings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
+
+                var client = new MongoClient(clientSettings);
                 _database = client.GetDatabase("ecommerce");
 
                 _policyWrap.ExecuteAsync(async () =>
