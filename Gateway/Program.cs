@@ -24,8 +24,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthorization();
 
-app.MapReverseProxy();
-
 app.MapControllers();
+app.MapReverseProxy();
 
 app.Run();

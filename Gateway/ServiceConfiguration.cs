@@ -11,28 +11,14 @@ public static class ServiceConfiguration
         public static void ConfigureServices(IServiceCollection services, WebApplicationBuilder builder)
         {
             ConfigureReverseProxy(services,builder);
-            ConfigureMonitoring(services,builder);
+            ConfigureTracing(services,builder);
+            // ConfigureLogging(services, builder);
         }
 
-        private static void ConfigureMonitoring(IServiceCollection services, WebApplicationBuilder builder)
+        private static void ConfigureLogging(IServiceCollection services, WebApplicationBuilder builder)
         {
-            services.AddOpenTelemetry()
-                .WithTracing(providerBuilder => providerBuilder
-                    .AddSource("Yarp.ReverseProxy")
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService("Gateway")) // Trace source will be called gateway
-                    .AddAspNetCoreInstrumentation() // For incoming requests
-                    .AddHttpClientInstrumentation() // For outgoing requests
-
-                    .AddJaegerExporter(options =>
-                    {
-                        options.AgentHost = "localhost";
-                        options.AgentPort = 2232;
-                    })
-                );
-            
             builder.Logging.ClearProviders();
-
+            
             // Configure Serilog
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Configuration) // Read configuration from appsettings.json
@@ -48,10 +34,24 @@ public static class ServiceConfiguration
                     };
                 })
                 .CreateLogger(); // Create the logger
+        }
 
-            // Add Serilog to the logging pipeline and ensure it gets disposed when the application shuts down
-            builder.Host.UseSerilog();
+        private static void ConfigureTracing(IServiceCollection services, WebApplicationBuilder builder)
+        {
+            services.AddOpenTelemetry()
+                .WithTracing(providerBuilder => providerBuilder
+                    .AddSource("Yarp.ReverseProxy")
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService("Gateway")) // Trace source will be called gateway
+                    .AddAspNetCoreInstrumentation() // For incoming requests
+                    .AddHttpClientInstrumentation() // For outgoing requests
 
+                    .AddJaegerExporter(options =>
+                    {
+                        options.AgentHost = "jaeger"; 
+                        options.AgentPort = 6831;     
+                    })
+                );
         }
 
         private static void ConfigureReverseProxy(IServiceCollection services, WebApplicationBuilder builder)
@@ -68,6 +68,7 @@ public static class ServiceConfiguration
             // Configure YARP reverse proxy by loading routes and clusters from memory
             services.AddReverseProxy()
                 .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+            
         }
 
         // Method to create dynamic routes based on configuration flags
