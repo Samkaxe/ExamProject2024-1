@@ -1,5 +1,11 @@
 version: '3.8'
 services:
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+    networks:
+      - app-network
   mongo:
     image: mongo:latest
     volumes:
@@ -45,7 +51,6 @@ services:
       - "9999:80"
     networks: 
       app-network:
-        
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
@@ -56,7 +61,7 @@ services:
     environment:
       - COLLECTOR_OTLP_ENABLED=true # Enable the OpenTelemetry Protocol (OTLP) collector
     networks:
-      - app-network
+      - app-network  
   
 #  authsql:
 #    image: postgres:latest
