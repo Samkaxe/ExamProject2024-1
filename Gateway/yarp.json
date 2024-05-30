@@ -54,7 +54,7 @@
       "products": {
         "ClusterId": "Inventory",
         "Match": {
-          "Path": "/Product"
+          "Path": "/Product/{**catch-all}"
         },
         "Transforms": [
           {
