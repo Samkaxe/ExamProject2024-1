@@ -6,6 +6,8 @@ using MongoDB.Driver;
 using Polly;
 using Polly.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,18 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Define Polly policies with detailed logging
 builder.Services.AddLogging(configure => configure.AddConsole());
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(providerBuilder => providerBuilder
+        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Inventory-Service"))
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddJaegerExporter(options =>
+        {
+            options.AgentHost = "jaeger";
+            options.AgentPort = 6831;
+        })
+    );
 
 var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
 var logger = loggerFactory.CreateLogger("PollyLogger");
