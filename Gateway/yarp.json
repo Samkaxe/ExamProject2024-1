@@ -13,7 +13,7 @@
   },
   "ReverseProxy": {
     "Clusters": {
-      "Authentication": {
+      "Authentication":   {
         "Destinations": {
           "Auth_0": {
             "Address": "http://authservice:80"

@@ -1,10 +1,60 @@
-﻿using Yarp.ReverseProxy.Configuration;
+﻿using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Serilog;
+using Serilog.Events;
+using Yarp.ReverseProxy.Configuration;
 
 namespace Gateway;
 
 public static class ServiceConfiguration
     {
         public static void ConfigureServices(IServiceCollection services, WebApplicationBuilder builder)
+        {
+            ConfigureReverseProxy(services,builder);
+            ConfigureMonitoring(services,builder);
+        }
+
+        private static void ConfigureMonitoring(IServiceCollection services, WebApplicationBuilder builder)
+        {
+            services.AddOpenTelemetry()
+                .WithTracing(providerBuilder => providerBuilder
+                    .AddSource("Yarp.ReverseProxy")
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService("Gateway")) // Trace source will be called gateway
+                    .AddAspNetCoreInstrumentation() // For incoming requests
+                    .AddHttpClientInstrumentation() // For outgoing requests
+
+                    .AddJaegerExporter(options =>
+                    {
+                        options.AgentHost = "localhost";
+                        options.AgentPort = 2232;
+                    })
+                );
+            
+            builder.Logging.ClearProviders();
+
+            // Configure Serilog
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration) // Read configuration from appsettings.json
+                .Enrich.FromLogContext() // Enrich logs with context information
+                .WriteTo.Console( // Write logs to console
+                    outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+                    restrictedToMinimumLevel: LogEventLevel.Information) // Minimum log level is Information
+                .WriteTo.OpenTelemetry(options => // Export logs to OpenTelemetry
+                {
+                    options.ResourceAttributes = new Dictionary<string, object>
+                    {
+                        ["service.name"] = "Gateway"
+                    };
+                })
+                .CreateLogger(); // Create the logger
+
+            // Add Serilog to the logging pipeline and ensure it gets disposed when the application shuts down
+            builder.Host.UseSerilog();
+
+        }
+
+        private static void ConfigureReverseProxy(IServiceCollection services, WebApplicationBuilder builder)
         {
             // Build the configuration by setting the base path and adding configuration
             // files and environment variables
@@ -17,7 +67,7 @@ public static class ServiceConfiguration
 
             // Configure YARP reverse proxy by loading routes and clusters from memory
             services.AddReverseProxy()
-                .LoadFromMemory(CreateDynamicRoutes(configuration), LoadClusters(configuration));
+                .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
         }
 
         // Method to create dynamic routes based on configuration flags
