@@ -1,4 +1,4 @@
-﻿using Checkoutservice.Extintions;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Checkoutservice.Controllers;
@@ -8,6 +8,7 @@ namespace Checkoutservice.Controllers;
 public class CheckoutController : ControllerBase
 {
     private readonly RedisCacheService _redisCacheService;
+    private static readonly ActivitySource ActivitySource = new ActivitySource("CheckoutService");
 
     public CheckoutController(RedisCacheService redisCacheService)
     {
@@ -17,6 +18,7 @@ public class CheckoutController : ControllerBase
     [HttpPost("start")]
     public IActionResult StartCheckoutSession(string userId, string orderId)
     {
+        using var activity = ActivitySource.StartActivity("StartCheckoutSession");
         _redisCacheService.SetCheckoutSession(userId, orderId);
         return Ok($"Checkout session started for User: {userId} with Order: {orderId}");
     }
@@ -24,6 +26,7 @@ public class CheckoutController : ControllerBase
     [HttpGet("session")]
     public IActionResult GetCheckoutSession(string userId)
     {
+        using var activity = ActivitySource.StartActivity("GetCheckoutSession");
         var orderId = _redisCacheService.GetCheckoutOrderId(userId);
         if (orderId != null)
         {
