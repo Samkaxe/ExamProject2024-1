@@ -1,11 +1,26 @@
+using Checkoutservice.Extintions;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Polly;
 using Serilog;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Load the configuration from appsettings.json
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddEnvironmentVariables();
+
+// Register the configuration class
+builder.Services.Configure<FeatureToggleSettings>(builder.Configuration.GetSection("FeatureToggles"));
+
+// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -37,12 +52,14 @@ var circuitBreakerPolicy = Policy.Handle<Exception>()
         onReset: () => Log.Information("Circuit reset."),
         onHalfOpen: () => Log.Information("Circuit in half-open state."));
 
+// Register RedisCacheService with dependency injection
 builder.Services.AddSingleton<RedisCacheService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
     var logger = provider.GetRequiredService<ILogger<RedisCacheService>>();
     var connectionString = configuration["RedisConnection:ConnectionString"];
-    return new RedisCacheService(connectionString, logger, retryPolicy, circuitBreakerPolicy);
+    var featureToggleSettings = provider.GetRequiredService<IOptions<FeatureToggleSettings>>().Value;
+    return new RedisCacheService(connectionString, logger, retryPolicy, circuitBreakerPolicy, featureToggleSettings);
 });
 
 builder.Logging.ClearProviders();
@@ -58,7 +75,6 @@ builder.Services.AddOpenTelemetry()
             .AddSource("CheckoutService")
             .SetSampler(new AlwaysOnSampler())
             .AddAspNetCoreInstrumentation()
-            //.AddConsoleExporter()
             .AddZipkinExporter(options =>
             {
                 options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans");
@@ -67,14 +83,12 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

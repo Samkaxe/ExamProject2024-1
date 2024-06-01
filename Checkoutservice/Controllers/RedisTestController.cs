@@ -20,7 +20,7 @@ public class RedisTestController : ControllerBase
     public IActionResult SetTestData()
     {
         using var activity = ActivitySource.StartActivity("SetTestData");
-        _redisCacheService.Set("testKey", "Hello Redis", TimeSpan.FromMinutes(5));
+        _redisCacheService.Set("1", "Hello Redis", TimeSpan.FromMinutes(5));
         return Ok("Data set in Redis");
     }
 
