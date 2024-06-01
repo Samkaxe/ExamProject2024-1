@@ -11,6 +11,7 @@ public static class DependencyResolverService
     public static void RegisterInfrastructureLayer(IServiceCollection services)
     {
         services.AddScoped<ICredentialRepository, CredentialRepository>();
+        services.AddScoped<IDatabaseHealthCheck, PostgresHealthCheck>();
         
         // Add the DatabaseInitializer
         services.AddScoped<DatabaseInitializer>();

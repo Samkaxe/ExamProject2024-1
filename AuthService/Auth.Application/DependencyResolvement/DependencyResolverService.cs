@@ -11,6 +11,6 @@ public static class DependencyResolverService
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddScoped<ITokenService, TokenService>();
-
+        services.AddScoped<IHealthCheckService, HealthCheckService>();
     }
 }

@@ -22,11 +22,11 @@ public class ServiceHealthController: ControllerBase
 
         if (isMicroserviceHealthy)
         {
-            return Ok(new { Status = "Healthy" }); // Explicitly indicate healthy status
+            return Ok(new { Status = "Healthy" });
         }
         else
         {
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { Status = "Unhealthy" }); // Indicate unhealthy status
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { Status = "Unhealthy" });
         }
     }
 
