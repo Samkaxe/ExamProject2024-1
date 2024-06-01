@@ -113,4 +113,29 @@ public class RedisCacheService
             throw;
         }
     }
+    
+    public async Task<bool> IsHealthyAsync()
+    {
+        try
+        {
+            using var activity = ActivitySource.StartActivity("RedisHealthCheck");
+
+            // Check if Redis connection is connected and active
+            if (_db.Multiplexer.IsConnected && _db.Multiplexer.GetServer(_db.Multiplexer.GetEndPoints().First()).IsConnected)
+            {
+                _logger.LogInformation("Redis is healthy.");
+                return true;
+            }
+            else
+            {
+                _logger.LogWarning("Redis connection is not active.");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Redis health check failed.");
+            return false;
+        }
+    }
 }
