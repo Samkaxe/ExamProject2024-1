@@ -33,6 +33,29 @@
           "Inventory_0": {
             "Address": "http://inventoryservice:80"
           }
+        },
+        "HealthCheck": {
+          "Active": {
+            "Enabled": true,
+            "Interval": "00:01:00",
+            "Timeout": "00:00:30",
+            "Path": "/HealthCheck/health"
+          }
+        }
+      },
+      "Checkout": {
+        "Destinations": {
+          "Checkout_0": {
+            "Address": "http://checkoutservice:80"
+          }
+        },
+        "HealthCheck": {
+          "Active": {
+            "Enabled": true,
+            "Interval": "00:00:20",
+            "Timeout": "00:00:30",
+            "Path": "/ServiceHealth/health"
+          }
         }
       }
     },
@@ -63,6 +86,28 @@
         "ClusterId": "Inventory",
         "Match": {
           "Path": "/Product/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "RequestHeadersCopy": "true"
+          }
+        ]
+      },
+      "checkout": {
+        "ClusterId": "Checkout",
+        "Match": {
+          "Path": "/Checkout/{**catch-all}"
+        },
+        "Transforms": [
+          {
+            "RequestHeadersCopy": "true"
+          }
+        ]
+      },
+      "redis-test": {
+        "ClusterId": "Checkout",
+        "Match": {
+          "Path": "/RedisTest/{**catch-all}"
         },
         "Transforms": [
           {
