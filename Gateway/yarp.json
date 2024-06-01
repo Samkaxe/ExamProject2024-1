@@ -18,6 +18,14 @@
           "Auth_0": {
             "Address": "http://authservice:80"
           }
+        },
+        "HealthCheck": {
+          "Active": {
+            "Enabled": true,
+            "Interval": "00:00:10",
+            "Timeout": "00:00:05",
+            "Path": "/ServiceHealth/health"
+          }
         }
       },
       "Inventory": {
