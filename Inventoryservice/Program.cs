@@ -93,6 +93,7 @@ var policyWrap = Policy.WrapAsync(retryPolicy, circuitBreakerPolicy);
 
 builder.Services.AddSingleton<IAsyncPolicy>(policyWrap);
 builder.Services.AddSingleton<MongoService>();
+builder.Services.AddSingleton<HealthCheckService>();
 
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
 var jwtExpirationDays = double.Parse(builder.Configuration["JwtSettings:ExpirationDays"]);
