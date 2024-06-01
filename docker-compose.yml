@@ -1,11 +1,11 @@
 version: '3.8'
 services:
-#  zipkin:
-#    image: openzipkin/zipkin
-#    ports:
-#      - 9411:9411
-#    networks:
-#      - app-network
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+    networks:
+      - app-network
 #  mongo:
 #    image: mongo:latest
 #    volumes:
@@ -18,12 +18,12 @@ services:
 #    networks:
 #      - app-network
 #
-#  redis:
-#    image: redis:latest
-#    ports:
-#      - "6379:6379"
-#    networks:
-#      - app-network
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
 #
 #  inventoryservice:
 #    build:
@@ -63,45 +63,45 @@ services:
 #    networks:
 #      - app-network  
   
-  authsql:
-    image: postgres:latest
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=auth_database
-    volumes:
-      - auth_data1:/var/lib/postgresql/data
-    networks: 
-      - app-network
-  
-  authservice:
-    build:
-      context: .
-      dockerfile: ./AuthService/Auth.API/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80;http://+:443
-    ports:
-      - "5002:80"
-    networks:
-      - app-network
-    depends_on: 
-      - authsql
-
-#  checkoutservice:
+#  authsql:
+#    image: postgres:latest
+#    environment:
+#      - POSTGRES_USER=user
+#      - POSTGRES_PASSWORD=password
+#      - POSTGRES_DB=auth_database
+#    volumes:
+#      - auth_data1:/var/lib/postgresql/data
+#    networks: 
+#      - app-network
+#  
+#  authservice:
 #    build:
 #      context: .
-#      dockerfile: ./Checkoutservice/Dockerfile
+#      dockerfile: ./AuthService/Auth.API/Dockerfile
 #    environment:
 #      - ASPNETCORE_ENVIRONMENT=Development
 #      - ASPNETCORE_URLS=http://+:80;http://+:443
 #    ports:
-#      - 5003:80
-#    depends_on:
-#      - mongo
-#      - redis
+#      - "5002:80"
 #    networks:
 #      - app-network
+#    depends_on: 
+#      - authsql
+
+  checkoutservice:
+    build:
+      context: .
+      dockerfile: ./Checkoutservice/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80;http://+:443
+    ports:
+      - 5003:80
+    depends_on:
+#      - mongo
+      - redis
+    networks:
+      - app-network
 
 volumes:
   mongodb_data_container:

@@ -2,6 +2,8 @@
 using Polly.Retry;
 using Polly.CircuitBreaker;
 using System.Diagnostics;
+using Checkoutservice.Extintions;
+using Microsoft.Extensions.Options;
 
 public class RedisCacheService
 {
@@ -10,12 +12,14 @@ public class RedisCacheService
     private readonly AsyncRetryPolicy _retryPolicy;
     private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
     private static readonly ActivitySource ActivitySource = new ActivitySource("CheckoutService");
+    private readonly FeatureToggleSettings _featureToggleSettings;
 
-    public RedisCacheService(string connectionString, ILogger<RedisCacheService> logger, AsyncRetryPolicy retryPolicy, AsyncCircuitBreakerPolicy circuitBreakerPolicy)
+    public RedisCacheService(string connectionString, ILogger<RedisCacheService> logger, AsyncRetryPolicy retryPolicy, AsyncCircuitBreakerPolicy circuitBreakerPolicy, FeatureToggleSettings featureToggleSettings)
     {
         _logger = logger;
         _retryPolicy = retryPolicy;
         _circuitBreakerPolicy = circuitBreakerPolicy;
+        _featureToggleSettings = featureToggleSettings;
         _db = ConnectToRedis(connectionString).GetAwaiter().GetResult();
     }
 
@@ -74,6 +78,13 @@ public class RedisCacheService
 
     public void SetCheckoutSession(string userId, string orderId)
     {
+        if (_featureToggleSettings.EnableCheckoutFeature)
+        {
+            _logger.LogInformation("EnableCheckoutFeature: true");
+            _logger.LogInformation("Checkout feature is disabled.");
+            return;
+        }
+
         using var activity = ActivitySource.StartActivity("SetCheckoutSession");
         var key = $"checkout:{userId}";
         try
