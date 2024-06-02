@@ -38,6 +38,7 @@ public class EncryptionService : IEncryptionService
 
     public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
+        using var activity = _activitySource.StartActivity("VerifyPassword", ActivityKind.Internal);
         // Decode the stored salt from byte array to string
         string saltString = Encoding.UTF8.GetString(storedSalt);
 
@@ -56,7 +57,12 @@ public class EncryptionService : IEncryptionService
         string storedHashString = Encoding.UTF8.GetString(storedHash);
 
         // Verify if the rehashed password with the salt matches the stored hash
-        return rehashedPassword == storedHashString;
+        bool isValid = rehashedPassword == storedHashString;
+    
+        // Add a tag to indicate password verification result
+        activity?.SetTag("password.verification.result", isValid ? "success" : "failure");
+
+        return isValid;
     }
 
 }
