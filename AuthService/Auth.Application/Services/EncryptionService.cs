@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 using Auth.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -8,15 +9,17 @@ namespace Auth.Application.Services;
 public class EncryptionService : IEncryptionService
 {
     private readonly string? _jwtSecret;
+    private readonly ActivitySource _activitySource;
 
-    public EncryptionService(IConfiguration configuration)
+    public EncryptionService(IConfiguration configuration, ActivitySource activitySource)
     {
         _jwtSecret = configuration["Secrets:JWT"]; 
-
+        _activitySource = activitySource;
     }
 
     public void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
     {
+        using var activity = _activitySource.StartActivity("CreatePasswordHash", ActivityKind.Internal);
         // Generate a random salt
         string salt = BCrypt.Net.BCrypt.GenerateSalt();
         passwordSalt = Encoding.UTF8.GetBytes(salt);
@@ -29,6 +32,8 @@ public class EncryptionService : IEncryptionService
         // Now hash the HMAC output with BCrypt along with the salt
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(Convert.ToBase64String(hmacBytes), salt);
         passwordHash = Encoding.UTF8.GetBytes(hashedPassword);
+        
+        activity?.Stop();
     }
 
     public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
