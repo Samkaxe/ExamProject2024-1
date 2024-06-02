@@ -75,6 +75,7 @@ builder.Services.AddOpenTelemetry()
             .AddSource("CheckoutService")
             .SetSampler(new AlwaysOnSampler())
             .AddAspNetCoreInstrumentation()
+            .AddMongoDBInstrumentation()
             .AddZipkinExporter(options =>
             {
                 options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans");
