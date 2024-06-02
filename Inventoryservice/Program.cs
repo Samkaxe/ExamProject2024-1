@@ -2,10 +2,7 @@ using System.Text;
 using InventoryService.Extintions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
 using Polly;
-using Polly.Extensions.Http;
-using Microsoft.Extensions.Logging;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -48,18 +45,18 @@ var circuitBreakerPolicy = Policy.Handle<Exception>()
 
 
 
-// builder.Services.AddOpenTelemetry()
-//     .WithTracing(providerBuilder => providerBuilder
-//         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Inventory-Service"))
-//         .AddAspNetCoreInstrumentation()
-//         .AddHttpClientInstrumentation()
-//         .AddMongoDBInstrumentation()
-//         .AddJaegerExporter(options =>
-//         {
-//             options.AgentHost = "jaeger";
-//             options.AgentPort = 6831;
-//         })
-//     );
+builder.Services.AddOpenTelemetry()
+    .WithTracing(providerBuilder => providerBuilder
+        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Inventory-Microservice"))
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddMongoDBInstrumentation()
+        .AddJaegerExporter(options =>
+        {
+            options.AgentHost = "jaeger";
+            options.AgentPort = 6831;
+        })
+    );
 
 var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
 var logger = loggerFactory.CreateLogger("PollyLogger");
