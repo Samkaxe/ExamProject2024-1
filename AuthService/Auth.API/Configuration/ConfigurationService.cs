@@ -11,7 +11,6 @@ public static class ConfigurationService
         builder.Services.AddOpenTelemetry()
             .WithTracing(providerBuilder => providerBuilder
                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Auth-Microservice"))
-                .AddSource("Encryption-Service")
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddNpgsql()
