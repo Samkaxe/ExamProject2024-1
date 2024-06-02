@@ -10,7 +10,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.19"/>
         <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="1.6.0-rc.1" />
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.0" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0-alpha.1" />
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.8.1" />
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.2-dev-00338" />
