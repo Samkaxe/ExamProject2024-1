@@ -48,14 +48,32 @@ public class RedisCacheService
     public void Set(string key, string value, TimeSpan expiry)
     {
         using var activity = ActivitySource.StartActivity("Set");
+        var stopwatch = Stopwatch.StartNew();
+        var process = Process.GetCurrentProcess();
+    
         try
         {
+            var cpuUsageStart = process.TotalProcessorTime;
+            var memoryUsageStart = process.WorkingSet64;
+
             _db.StringSet(key, value, expiry);
+        
+            var cpuUsageEnd = process.TotalProcessorTime;
+            var memoryUsageEnd = process.WorkingSet64;
+
+            stopwatch.Stop();
+
+            var cpuUsage = cpuUsageEnd - cpuUsageStart;
+            var memoryUsage = memoryUsageEnd - memoryUsageStart;
+        
             _logger.LogInformation("Set {Key} to {Value} with expiry {Expiry}", key, value, expiry);
+            _logger.LogInformation("CPU Usage: {CpuUsage}ms, Memory Usage: {MemoryUsage} bytes, Duration: {Duration}ms", 
+                cpuUsage.TotalMilliseconds, memoryUsage, stopwatch.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error setting key {Key} in Redis.", key);
+            stopwatch.Stop();
+            _logger.LogError(ex, "Error setting key {Key} in Redis. Duration: {Duration}ms", key, stopwatch.ElapsedMilliseconds);
             throw;
         }
     }

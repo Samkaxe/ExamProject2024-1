@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.Domain", "AuthService\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gateway", "Gateway\Gateway.csproj", "{C518723A-3DCF-44F5-9B6A-C8692EE9504C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMQService", "RabbitMQService\RabbitMQService.csproj", "{E5F95CEE-6767-4047-A632-458CFA24B30F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{C518723A-3DCF-44F5-9B6A-C8692EE9504C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C518723A-3DCF-44F5-9B6A-C8692EE9504C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C518723A-3DCF-44F5-9B6A-C8692EE9504C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5F95CEE-6767-4047-A632-458CFA24B30F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5F95CEE-6767-4047-A632-458CFA24B30F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5F95CEE-6767-4047-A632-458CFA24B30F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5F95CEE-6767-4047-A632-458CFA24B30F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E102A693-1468-4D3E-9751-13261B878EEC} = {F12CA20D-B6CD-4350-9C5E-61EB1F5AEF4B}
