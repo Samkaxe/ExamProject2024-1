@@ -68,7 +68,8 @@ builder.Logging.AddDebug();
 
 // Configure OpenTelemetry with Zipkin
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resourceBuilder => resourceBuilder.AddService("CheckoutService"))
+    .ConfigureResource(resourceBuilder => 
+        resourceBuilder.AddService("CheckoutService"))
     .WithTracing(tracingBuilder =>
     {
         tracingBuilder
