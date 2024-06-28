@@ -17,7 +17,7 @@ public class RabbitMQService : IDisposable
         _channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
         _httpClient = httpClient;
     }
-
+    
     public void SendMessage(string queueName, string message)
     {
         var body = Encoding.UTF8.GetBytes(message);

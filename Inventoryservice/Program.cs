@@ -26,7 +26,7 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Configure Polly policies
+z// Configure Polly policies
 var retryPolicy = Policy.Handle<Exception>()
     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
         onRetry: (exception, timeSpan, retryCount, context) =>

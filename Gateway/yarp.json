@@ -126,7 +126,7 @@
           "FailuresAllowedBeforeBreaking": 3,
           "DurationOfBreak": "00:01:00"
         }
-      }
+      } 
     }
   }
 }

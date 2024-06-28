@@ -6,24 +6,24 @@ services:
 #      - 9411:9411
 #    networks:
 #      - app-network
-#  mongo:
-#    image: mongo:latest
-#    volumes:
-#      - mongodb_data_container:/data/db
-#    ports:
-#      - "27017:27017"
-#    environment:
-#      MONGO_INITDB_ROOT_USERNAME: root
-#      MONGO_INITDB_ROOT_PASSWORD: example
-#    networks:
-#      - app-network
-#
-#  redis:
-#    image: redis:latest
-#    ports:
-#      - "6379:6379"
-#    networks:
-#      - app-network
+  mongo:
+    image: mongo:latest
+    volumes:
+      - mongodb_data_container:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
 #
 #  inventoryservice:
 #    build:
@@ -39,18 +39,18 @@ services:
 #      - redis
 #    networks:
 #      - app-network
-  
-  gateway:
-    build:
-      context: .
-      dockerfile: Gateway/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-    ports:
-      - "9999:80"
-    networks: 
-      app-network:
+#  
+#  gateway:
+#    build:
+#      context: .
+#      dockerfile: Gateway/Dockerfile
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - ASPNETCORE_URLS=http://+:80
+#    ports:
+#      - "9999:80"
+#    networks: 
+#      app-network:
         
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -64,49 +64,63 @@ services:
     networks:
       - app-network  
   
-  authsql:
-    image: postgres:latest
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=auth_database
-    volumes:
-      - auth_data1:/var/lib/postgresql/data
-    networks: 
-      - app-network
+#  authsql:
+#    image: postgres:latest
+#    environment:
+#      - POSTGRES_USER=user
+#      - POSTGRES_PASSWORD=password
+#      - POSTGRES_DB=auth_database
+#    volumes:
+#      - auth_data1:/var/lib/postgresql/data
+#    networks: 
+#      - app-network
 
-  authservice:
-    build:
-      context: .
-      dockerfile: ./AuthService/Auth.API/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80;http://+:443
-    ports:
-      - "5002:80"
-    networks:
-      - app-network
-    depends_on: 
-      - authsql
-
-#  checkoutservice:
+#  authservice:
 #    build:
 #      context: .
-#      dockerfile: ./Checkoutservice/Dockerfile
+#      dockerfile: ./AuthService/Auth.API/Dockerfile
 #    environment:
 #      - ASPNETCORE_ENVIRONMENT=Development
 #      - ASPNETCORE_URLS=http://+:80;http://+:443
 #    ports:
-#      - 5003:80
-#    depends_on:
-##      - mongo
-#      - redis
+#      - "5002:80"
 #    networks:
 #      - app-network
+#    depends_on: 
+#      - authsql
+
+  checkoutservice:
+    build:
+      context: .
+      dockerfile: ./Checkoutservice/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80;http://+:443
+    ports:
+      - 5003:80
+    depends_on:
+#      - mongo
+      - redis
+    networks:
+      - app-network
+    
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    networks: 
+      app-network:
+    environment:
+      - ACCEPT_EULA=Y # Accept the End User License Agreement
+    volumes:
+      - seq-data:/data # Mount a volume for persistent storage
+    ports:
+      - "5341:80" # Map TCP port 80 in the container to port 5341 on the host
+    restart: unless-stopped
 
 volumes:
   mongodb_data_container:
   auth_data1:
+  seq-data:
 
 networks:
   app-network:
